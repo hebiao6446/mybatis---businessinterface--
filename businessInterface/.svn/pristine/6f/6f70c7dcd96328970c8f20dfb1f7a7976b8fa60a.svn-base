@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Group">
+	<resultMap type="Group" id="GroupMap">
+		<result column="group_id" property="groupId" />
+		<result column="user_id" property="userId" />
+		<result column="name" property="name" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="is_default" property="isDefault" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+	<sql id="dataFilter">
+		AND delete_flag=1
+	</sql>
+
+	<select id="findUserGroupList" parameterType="net.sf.json.JSONObject"
+		resultMap="GroupMap">
+		select * from tb_group WHERE user_id=#{userId}
+		<include refid="Group.dataFilter" />
+	</select>
+
+	<insert id="insertUserGroupInfo" parameterType="net.sf.json.JSONObject">
+		insert into
+		tb_group(user_id,name,update_time,delete_flag,is_default)
+		values(#{userId},#{name},#{updateTime},1,'F')
+	</insert>
+
+	<update id="updateUserGroupInfo" parameterType="net.sf.json.JSONObject">
+		update tb_group
+		set name=#{name},update_time=#{updateTime}
+		where group_id=#{groupId}
+	</update>
+
+
+
+
+
+</mapper>

@@ -1,0 +1,49 @@
+package com.business.service.impl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import com.business.entity.Company;
+import com.business.entity.User;
+import com.business.service.ColumnManager;
+import com.business.service.ContactManager;
+import com.business.service.UserManager;
+import com.common.Commonparam;
+
+@Service
+@Transactional
+public class UserManagerImpl implements UserManager{
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+	
+	public UserManagerImpl() {
+	}
+
+	@Override
+	public User userLogin(JSONObject param) {
+		// TODO Auto-generated method stub
+		Object obj = sqlSession.selectOne("User.userLogin",param);
+		return (User) obj;
+	}
+	
+	
+	
+}

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ThingsFinish">
+
+	<resultMap type="ThingsFinish" id="ThingsFinishMap">
+		<result property="thingsId" column="things_id" />
+		<result property="finishUserId" column="finish_user_id" />
+		<result property="isFinish" column="is_finish" />
+		<result property="finishTime" column="finish_time" />
+		<result property="deleteFlag" column="delete_flag" />
+	</resultMap>
+
+	<select id="findAllThings" parameterType="net.sf.json.JSONObject"
+		resultType="com.business.entity.ThingsThingsFinish">
+		SELECT tf.things_id as thingsId, tf.finish_user_id as
+		finishUserId,
+		tf.is_finish as isFinish, tf.finish_time as finishTime,
+		t.content, t.create_user_id as createUserId,
+		t.end_time as endTime,
+		t.is_emergency as isEmergency,
+		t.period_type as periodType,
+		t.start_time as startTime,
+		t.update_time as updateTime from
+		tb_things_finish tf INNER JOIN tb_things t on
+		tf.things_id=t.things_id
+		where tf.finish_user_id=#{userId} and
+		tf.delete_flag=1
+	</select>
+	<insert id="addThingsFinish" parameterType="com.business.entity.ThingsFinish">
+		insert into
+		tb_things_finish ( things_id, finish_user_id, is_finish,
+		finish_time,
+		delete_flag)
+		values(#{thingsId}, #{finishUserId}, #{isFinish},
+		#{finishTime}, #{deleteFlag})
+	</insert>
+	<update id="deleteThingsFinishUser" parameterType="Long">
+		update
+		tb_things_finish set delete_flag=2
+		where things_id=#{thingsId}
+	</update>
+	<update id="updateThingsFinishUser" parameterType="com.business.entity.ThingsFinish">
+		update
+		tb_things_finish set delete_flag=1
+		where things_id=#{thingsId} and
+		finish_user_id=#{finishUserId}
+	</update>
+	<select id="ThingsFinishUser" parameterType="com.business.entity.ThingsFinish"
+		resultMap="ThingsFinishMap">
+		select * from tb_things_finish where things_id=#{thingsId}
+		and finish_user_id=#{finishUserId}
+	</select>
+	<select id="findUsersByThingsId" parameterType="net.sf.json.JSONObject"
+		resultMap="ThingsFinishMap">
+		select * from tb_things_finish where things_id=#{thingsId} and delete_flag=1
+	</select>
+	<update id="finishThings" parameterType="net.sf.json.JSONObject">
+		update tb_things_finish
+		set is_finish='T' where things_id=#{thingsId}
+		and
+		finish_user_id=#{finishUserId}
+	</update>
+
+</mapper>
+

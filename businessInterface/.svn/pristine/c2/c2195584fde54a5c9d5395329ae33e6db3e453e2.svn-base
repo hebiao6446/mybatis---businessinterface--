@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Attendance">
+
+	<resultMap type="Attendance" id="AttendanceMap">
+		<result column="attendance_id" property="attendanceId" />
+		<result column="user_id" property="userId" />
+		<result column="in_phone" property="inPhone" />
+		<result column="in_time" property="inTime" />
+		<result column="out_time" property="outTime" />
+		<result column="out_phone" property="outPhone" />
+		<result column="status" property="status" />
+		<result column="day_time" property="dayTime" />
+		<result column="in_address" property="inAddress" />
+		<result column="out_address" property="outAddress" />
+		<result column="in_lng" property="inLng" />
+		<result column="in_lat" property="inLat" />
+		<result column="out_lng" property="outLng" />
+		<result column="out_lat" property="outLat" />
+		<result column="delete_flag" property="deleteFlag" />
+	</resultMap>
+	<sql id="datr">
+		AND delete_flag=1
+	</sql>
+	<select id="findTodaySign" parameterType="net.sf.json.JSONObject"
+		resultMap="AttendanceMap">
+		select * from tb_attendance WHERE user_id=#{userId} and
+		day_time=#{dayTime}
+		<include refid="Attendance.datr" />
+	</select>
+	<insert id="insertSign" parameterType="net.sf.json.JSONObject">
+		insert into
+		tb_attendance
+		(user_id, in_phone, in_time, In_lng,
+		In_lat, In_address, status,
+		day_time, delete_flag)
+		values (#{userId}, #{phone}, #{time}, #{lng},
+		#{lat}, #{address}, #{status}, #{dayTime}, 1)
+	</insert>
+	<update id="updateSign" parameterType="net.sf.json.JSONObject">
+		update tb_attendance set
+		out_phone=#{phone}, out_time=#{time},
+		out_lng=#{lng},	out_lat=#{lat}, out_address=#{address}, 
+		status=#{status} where user_id=#{userId} and day_time=#{dayTime}
+	</update>
+
+</mapper>

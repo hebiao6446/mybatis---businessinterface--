@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Project">
+
+	<resultMap type="Project" id="ProjectMap">
+		<result column="project_id" property="projectId" />
+		<result column="contacts_id" property="contactsId" />
+		<result column="user_id" property="userId" />
+		<result column="source" property="source" />
+		<result column="status" property="status" />
+		<result column="total_price" property="totalPrice" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+<sql id="dataFilter">
+		AND delete_flag=1
+	</sql>
+	
+	
+	<select id="findProjectList" parameterType="net.sf.json.JSONObject"  resultMap="ProjectMap">
+		select * from tb_project  WHERE   user_id=#{userId}  
+		<include refid="Project.dataFilter" /> order by  update_time desc 
+
+	</select>
+	
+<update id="updateProjectInfo" parameterType="net.sf.json.JSONObject">
+		update tb_project   set status=#{status},total_price=#{totalPrice},source=#{source},update_time=#{updateTime}  where project_id=#{projectId}
+	</update>
+	
+<insert id="insertProjectInfo" parameterType="net.sf.json.JSONObject">
+		insert into
+		tb_project(user_id,contacts_id,source,status,total_price,update_time,delete_flag)
+		values(#{userId},#{contactsId},#{source},#{status},#{totalPrice},#{updateTime},1)
+	</insert>
+	
+
+
+</mapper>

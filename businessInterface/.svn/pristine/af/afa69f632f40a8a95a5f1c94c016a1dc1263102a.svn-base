@@ -1,0 +1,270 @@
+package com.business.action;
+
+import java.sql.Time;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Namespace;
+
+import com.business.entity.Attendance;
+import com.business.entity.Company;
+import com.business.entity.Content;
+import com.business.entity.User;
+import com.business.service.SignManager;
+import com.business.service.UserManager;
+import com.common.Commonparam;
+import com.common.MD5Util;
+import com.json.BaseBean;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+@Namespace("/sign")
+public class SignAction extends ActionSupport {
+	private static Logger logger = Logger.getLogger(SignAction.class);
+
+	private String key, data;
+	@Resource
+	private SignManager signManager;
+	@Resource
+	private UserManager userManager;
+
+	/**
+	 * 考勤ppt：第1页
+	 * @throws Exception
+	 */
+	@Action(value = "findTodaySign")
+	public void findTodaySign() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = MD5Util.digest(data);
+			JSONObject param = JSONObject.fromObject(data);
+			User user = userManager.userLogin(param);
+			Long userId = param.getLong("userId");
+			if (keyparam.equals(key) && user != null
+					&& user.getUserId().longValue() == userId.longValue()) {
+				param.put("dayTime",
+						new java.sql.Date(new Date().getTime()).toString());
+				Attendance attendance = signManager.findTodaySign(param);
+
+				HashMap<String, String> map = new HashMap<String, String>();
+				map.put("in", "F");
+				map.put("out", "F");
+				if (attendance != null) {
+					if (attendance.getInTime() != null) {
+						map.put("in", "T");
+					}
+					if (attendance.getOutTime() != null) {
+						map.put("out", "T");
+					}
+				}
+				bean.setStatus(200);
+				bean.setRows(map);
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("sign/findTodaySign:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 考勤ppt：第1页，考勤
+	 * @throws Exception
+	 */
+	@Action(value = "updateSign")
+	public void updateSign() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = MD5Util.digest(data);
+			JSONObject param = JSONObject.fromObject(data);
+			User user = userManager.userLogin(param);
+			Long userId = param.getLong("userId");
+
+			if (keyparam.equals(key) && user != null
+					&& user.getUserId() == userId) {
+				Time intime = Time.valueOf(param.getString("time"));
+				Time time = new java.sql.Time(new Date().getTime());
+
+				if (time.getTime() - intime.getTime() > 1000 * 60 * 2) {
+					param.put("dayTime",
+							new java.sql.Date(new Date().getTime()).toString());
+					Company company = signManager.findCompanyInfo(user);
+					Attendance attendance = signManager.findTodaySign(param);
+					String type = param.getString("type");
+					if (type != null && "D".equals("type")
+							&& attendance == null) {
+						if (intime.before(company.getReportWork())) {
+							param.put("status", 1);
+						} else {
+							param.put("status", 0);
+						}
+						signManager.insertSign(param);
+
+					} else if (type != null && "D".equals("type")
+							&& attendance != null) {
+						if (intime.before(company.getOutWork())) {
+							if (attendance.getStatus() == 1) {
+								param.put("status", 3);
+							} else if (attendance.getStatus() == 0) {
+								param.put("status", 2);
+							}
+						}
+						signManager.updateSign(param);
+					}
+					bean.setStatus(200);
+					bean.setRows("T");
+				} else {
+					bean.setStatus(400);
+					bean.setMsg(Commonparam.error_time_msg);
+				}
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("sign/updateSign:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+	/**
+	 * 考勤ppt：第2页
+	 * @throws Exception
+	 */
+	@Action(value = "insertContent")
+	public void insertContent() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = MD5Util.digest(data);
+			JSONObject param = JSONObject.fromObject(data);
+			User user = userManager.userLogin(param);
+			Long userId = param.getLong("userId");
+			if (keyparam.equals(key) && user != null
+					&& user.getUserId() == userId) {
+				param.put("dayTime",
+						new java.sql.Date(new Date().getTime()).toString());
+				param.put("updateTime",new Date().toString());
+				
+				signManager.insertContent(param);
+				bean.setStatus(200);				
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("sign/signContent:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+	
+	@Action(value = "findHistorySign")
+	public void findHistorySign() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = MD5Util.digest(data);
+			JSONObject param = JSONObject.fromObject(data);
+			User user = userManager.userLogin(param);
+			Long userId = param.getLong("userId");
+			if (keyparam.equals(key) && user != null
+					&& user.getUserId() == userId) {
+				
+				List<Attendance> list=signManager.findHistorySign(param);
+				bean.setStatus(200);
+				bean.setRows(list);
+				
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("sign/signContent:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+	
+	@Action(value = "findManagedSign")
+	public void findManagedSign() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = MD5Util.digest(data);
+			JSONObject param = JSONObject.fromObject(data);
+			User user = userManager.userLogin(param);
+			Long userId = param.getLong("userId");
+			if (keyparam.equals(key) && user != null
+					&& user.getUserId() == userId) {
+				param.put("role", user.getRoleId());				
+				List<Attendance> list=signManager.findManagedSign(param);
+								
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("sign/signContent:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+}

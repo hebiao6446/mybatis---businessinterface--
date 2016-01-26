@@ -1,0 +1,149 @@
+package com.business.action;
+
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.UUID;
+
+import javax.annotation.Resource;
+import javax.imageio.ImageIO;
+import javax.persistence.Column;
+import javax.print.Doc;
+import javax.print.DocFlavor;
+import javax.print.DocPrintJob;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.SimpleDoc;
+import javax.print.attribute.DocAttributeSet;
+import javax.print.attribute.HashDocAttributeSet;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.Copies;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.swing.JFileChooser;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.StrutsStatics;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Namespace;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
+import org.springframework.stereotype.Controller;
+
+import com.business.entity.Blessings;
+import com.business.entity.BlessingsType;
+import com.business.entity.Company;
+import com.business.entity.Group;
+import com.business.entity.User;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
+import com.json.BaseBean;
+import com.business.service.BlessingsManager;
+import com.business.service.ColumnManager;
+import com.business.service.ContactManager;
+import com.business.service.ProductManager;
+import com.business.service.UserManager;
+import com.common.Commonparam;
+import com.common.MD5Util;
+import com.common.PingYin;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
+
+@Namespace("/product")
+public class ProductAction extends ActionSupport {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8491620621758148693L;
+	private static Logger logger = Logger.getLogger(ProductAction.class);
+	@Resource
+	private ProductManager productManager;
+	private String key, data;
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+	public void setProductManager(ProductManager productManager) {
+		this.productManager = productManager;
+	}
+
+	public ProductManager getProductManager() {
+		return productManager;
+	}
+
+}

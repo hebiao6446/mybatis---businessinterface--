@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Things">
+	<resultMap type="Things" id="ThingsMap">
+		<result property="thingsId" column="things_id" />
+		<result property="content" column="content" />
+		<result property="isEmergency" column="is_emergency" />
+		<result property="periodType" column="period_type" />
+		<result property="createUserId" column="create_user_id" />
+		<result property="startTime" column="start_time" />
+		<result property="endTime" column="end_time" />
+		<result property="updateTime" column="update_time" />
+		<result property="deleteFlag" column="delete_flag" />
+	</resultMap>
+
+	<insert id="createNewThings" parameterType="net.sf.json.JSONObject">
+		INSERT INTO
+		tb_things(content, is_emergency, period_type, create_user_id,
+		start_time, end_time, update_time, delete_flag)
+		VALUES(#{content},
+		#{isEmergency}, #{periodType},
+		#{userId}, #{startTime},
+		#{endTime},
+		#{updateTime}, 1)
+	</insert>
+	<select id="selectThingsIcd" parameterType="net.sf.json.JSONObject"
+		resultType="Long">
+		select things_id from tb_things where content=#{content}
+		and is_emergency=#{isEmergency} and period_type=#{periodType}
+		and update_time=#{updateTime} and 
+		create_user_id=#{userId} and end_time=#{endTime}
+	</select>
+	<update id="updateThings" parameterType="net.sf.json.JSONObject">
+		update tb_things set
+		content=#{content}, is_emergency=#{isEmergency},
+		period_type=#{periodType}, end_time=#{endTime},
+		update_time=#{updateTime} where
+		things_id=#{thingsId}
+	</update>
+	<select id="findAllCreateThings" parameterType="net.sf.json.JSONObject"
+		resultMap="ThingsMap">
+		select * from tb_things where create_user_id=#{userId} and delete_flag=1
+	</select>
+	<select id="findCreateThings" parameterType="net.sf.json.JSONObject"
+		resultMap="ThingsMap">
+		select * from tb_things where create_user_id=#{userId} and
+		things_id=#{thingsId} and delete_flag=1
+	</select>
+</mapper>

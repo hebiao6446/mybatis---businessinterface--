@@ -1,0 +1,362 @@
+package com.business.action;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Namespace;
+
+import com.business.entity.User;
+import com.business.entity.UserRoleCompany;
+import com.json.BaseBean;
+import com.business.service.UserManager;
+import com.common.Commonparam;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+@Namespace("/user")
+public class UserAction extends ActionSupport {
+
+	private static final long serialVersionUID = 8491620621758148693L;
+	private static Logger logger = Logger.getLogger(UserAction.class);
+	@Resource
+	private UserManager userManager;
+	private String key, data;
+
+	/**
+	 * 登录接口
+	 * 
+	 * @throws Exception
+	 */
+	@Action(value = "userLogin")
+	public void userLogin() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = Commonparam.Md5String(data);
+			if (keyparam.equals(key)) {
+				JSONObject param = JSONObject.fromObject(data);
+				User user = userManager.userLogin(param);
+				if (user == null) {
+					bean.setStatus(400);
+					bean.setMsg("账号密码错误!");
+				} else {
+					HashMap<String, Object> rt = new HashMap<String, Object>();
+					rt.put("userId", user.getUserId());
+					rt.put("roleId", user.getRoleId());
+					rt.put("companyId",
+							userManager.findUserCompanyId(user.getRoleId()));
+					rt.put("headImage", user.getHeadImage());
+					rt.put("phone", user.getPhone());
+					rt.put("account", user.getAccount());
+					rt.put("name", user.getName());
+					Integer companyType = userManager.findUserCompanyType(user
+							.getRoleId());
+					if (companyType != null && companyType == 1) {
+						Long count = userManager.findUserRoleChidren(user
+								.getRoleId());
+						if (count > 0) {
+							rt.put("isLeader", 1);
+						} else {
+							rt.put("isLeader", 0);
+						}
+					} else {
+						rt.put("isLeader", 0);
+					}
+					JSONObject param1 = JSONObject.fromObject("{}");
+					param1.put("userId", user.getUserId());
+					List<HashMap> list = userManager.findUserMainMenu(param1);
+					rt.put("module", list);
+					bean.setStatus(200);
+					bean.setRows(rt);
+				}
+
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("user/userLogin:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 用户主功能列表
+	 * 
+	 * @throws Exception
+	 */
+	@Action(value = "findUserMainMenu")
+	public void findUserMainMenu() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = Commonparam.Md5String(data);
+			if (keyparam.equals(key)) {
+				JSONObject param = JSONObject.fromObject(data);
+				List<HashMap> list = userManager.findUserMainMenu(param);
+				bean.setStatus(200);
+				bean.setRows(list);
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("user/userMainMenu:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	/**
+	 * 企业所有模块列表
+	 * 
+	 * @throws Exception
+	 */
+	@Action(value = "findUserAllMenu")
+	public void findUserAllMenu() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = Commonparam.Md5String(data);
+			if (keyparam.equals(key)) {
+				JSONObject param = JSONObject.fromObject(data);
+				List<HashMap> list = userManager.findUserAllMenu(param);
+				for (HashMap map : list) {
+					map.put("isAdded",
+							userManager.findUserAddModule(map.get("moduleId")));
+				}
+				bean.setStatus(200);
+				bean.setRows(list);
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("user/userMainMenu:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	@Action(value = "addUserSuggest")
+	public void addUserSuggest() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = Commonparam.Md5String(data);
+			if (keyparam.equals(key)) {
+				JSONObject param = JSONObject.fromObject(data);
+				param.put("updateTime", Commonparam.Date2Str());
+				userManager.addUserSuggest(param);
+				bean.setStatus(200);
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("user/userMainMenu:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	@Action(value = "updateAttendanceTime")
+	public void updateAttendanceTime() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = Commonparam.Md5String(data);
+			if (keyparam.equals(key)) {
+				JSONObject param = JSONObject.fromObject(data);
+				UserRoleCompany urc = userManager.finduserRoleAndCompany(param);
+				if (urc.getParentId() > 0) {
+					bean.setMsg("您没有权限修改！");
+				} else {
+					bean.setStatus(200);
+				}
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("user/userMainMenu:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	private Integer fileType;
+	private File uploadFile;
+	private String uploadFileFileName;
+
+	@Action(value = "uploadFile")
+	public void uploadFile() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		long max = Commonparam.FALE_SIZE[fileType];
+		if (this.uploadFile != null) {
+			int length = 0;
+			try {
+				FileInputStream fis = new FileInputStream(uploadFile);
+				try {
+					length = fis.available();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			} catch (FileNotFoundException e2) {
+				e2.printStackTrace();
+			}
+			if (max >= length) {
+				String newfilename = Commonparam
+						.makeNewFileName(uploadFileFileName);
+				String targetFolder = "/upload/"
+						+ Commonparam.FILE_PATH[fileType]
+						+ Commonparam.makeYearMonth(new Date());
+				String absolute = request.getSession().getServletContext()
+						.getRealPath("/")
+						+ targetFolder;
+				Commonparam.makeFile(uploadFile, absolute, newfilename);
+
+				bean.setStatus(200);
+				bean.setRows(targetFolder + newfilename);
+			} else {
+				bean.setStatus(400);
+				bean.setMsg("文件大小" + max / 1024 + "K内!");
+			}
+		} else {
+			bean.setStatus(400);
+			bean.setMsg("请选择文件!");
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	private String path;
+
+	public void findPicture() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		synchronized (response) {
+			try {
+				File file = new File(path);
+				if (file.exists()) {
+					response.reset();
+					response.setContentType("image/png");
+					BufferedInputStream fileIn = new BufferedInputStream(
+							new FileInputStream(file));
+					byte[] buf = new byte[1024];
+					while (true) {
+						// 读取数据
+						int bytesIn = fileIn.read(buf, 0, 1024);
+						if (bytesIn == -1) {
+							break;
+						} else {
+							response.getOutputStream().write(buf, 0, bytesIn);
+						}
+					}
+					response.getOutputStream().flush();
+					response.getOutputStream().close();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public Integer getFileType() {
+		return fileType;
+	}
+
+	public void setFileType(Integer fileType) {
+		this.fileType = fileType;
+	}
+
+	public File getUploadFile() {
+		return uploadFile;
+	}
+
+	public void setUploadFile(File uploadFile) {
+		this.uploadFile = uploadFile;
+	}
+
+	public String getUploadFileFileName() {
+		return uploadFileFileName;
+	}
+
+	public void setUploadFileFileName(String uploadFileFileName) {
+		this.uploadFileFileName = uploadFileFileName;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+}

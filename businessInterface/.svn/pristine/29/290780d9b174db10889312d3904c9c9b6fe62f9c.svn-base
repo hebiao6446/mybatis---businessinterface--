@@ -1,0 +1,63 @@
+package com.business.service.impl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import com.business.entity.BlessingsType;
+import com.business.entity.Company;
+import com.business.entity.ProductCategory;
+import com.business.entity.User;
+import com.business.service.BlessingsManager;
+import com.business.service.ColumnManager;
+import com.business.service.ContactManager;
+import com.business.service.ProductManager;
+import com.business.service.UserManager;
+import com.common.Commonparam;
+
+@Service
+@Transactional
+public class ProductManagerImpl implements ProductManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	/**
+	 * 此句话针对查询
+	 */
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	@Override
+	public List findProductCategoryList(JSONObject param) {
+
+		param.put("parentId", 0);
+
+		List<ProductCategory> list = (List<ProductCategory>) sqlSession
+				.selectList("ProductCategory.findProductCategoryList", param);
+		for (ProductCategory pc : list) {
+			param.put("parentId", pc.getProductCategoryId());
+			List<ProductCategory> list1 = (List<ProductCategory>) sqlSession
+					.selectList("ProductCategory.findProductCategoryList",
+							param);
+			pc.setProductlist(list1);
+		}
+
+		return list;
+	}
+
+}

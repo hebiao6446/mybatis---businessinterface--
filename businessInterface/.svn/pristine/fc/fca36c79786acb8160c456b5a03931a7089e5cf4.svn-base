@@ -1,0 +1,144 @@
+package com.business.service.impl;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import com.business.entity.Company;
+import com.business.entity.Contacts;
+import com.business.entity.Group;
+import com.business.service.ColumnManager;
+import com.business.service.ContactManager;
+import com.common.Commonparam;
+
+@Service
+@Transactional
+public class ContactManagerImpl implements ContactManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	/**
+	 * 此句话针对查询
+	 */
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	// 一个只读事务，可以提高效率。
+	@Override
+	public List findUserGroupList(JSONObject param) {
+		List<HashMap> list = (List<HashMap>) sqlSession.selectList(
+				"Group.findUserGroupList", param);
+		return list;
+	}
+
+	@Override
+	public Integer findcontactsCount(Group group) {
+		return (Integer) sqlSession.selectOne("Contacts.findcontactsCount",
+				group);
+
+	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	// 一个只读事务，可以提高效率。
+	@Override
+	public Object findcontactsList(Group group) {
+		Object obj = sqlSession.selectList("Contacts.findcontactsList", group);
+		return obj;
+	}
+
+	@Override
+	public void updateUserGroupInfo(JSONObject param) {
+		if (param.get("groupId") != null
+				&& param.get("groupId").toString().trim().length() > 0) {
+			sqlSession.update("Group.updateUserGroupInfo", param);
+		} else {
+			sqlSession.insert("Group.insertUserGroupInfo", param);
+
+		}
+	}
+
+	@Override
+	public void updateContactsInfo(JSONObject param) {
+		if (param.get("contactsId") != null
+				&& param.get("contactsId").toString().trim().length() > 0) {
+			sqlSession.update("Contacts.updateContactsInfo", param);
+		} else {
+			sqlSession.insert("Contacts.insertContactsInfo", param);
+
+		}
+	}
+
+	@Override
+	public List findGroupList(JSONObject param) {
+		List<HashMap> list = (List<HashMap>) sqlSession.selectList(
+				"Group.findGroupList", param);
+		return list;
+	}
+
+	@Override
+	public void deleteGroupData(JSONObject param) {
+		if (param.get("groupId") != null
+				&& param.get("groupId").toString().trim().length() > 0) {
+			sqlSession.update("Contacts.updateGroupContactData", param);
+			sqlSession.delete("Group.deleteGroupData", param);
+		}
+
+	}
+
+	@Override
+	public Group findGroupisDefaultList(JSONObject param) {
+		return (Group) sqlSession.selectOne("Group.findGroupisDefaultList",
+				param);
+
+	}
+
+	@Override
+	public Object findMyContactsNum(JSONObject param) {
+		Object count = sqlSession
+				.selectOne("Contacts.findMyContactsNum", param);
+		return count;
+	}
+
+	@Override
+	public Object findSubContactsNum(JSONObject param) {
+		String roleids = (String) sqlSession.selectOne(
+				"Contacts.findSubRoleIdList", param);
+		if (roleids == null || roleids.trim().length() == 0) {
+			return 0;
+		}
+		Object count = sqlSession.selectOne("Contacts.findSubContactsNum",
+				roleids);
+		return count;
+	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	// 一个只读事务，可以提高效率。
+	@Override
+	public List findMySubContactsList(JSONObject param) {
+		String roleids = (String) sqlSession.selectOne(
+				"Contacts.findSubRoleIdList", param);
+		if (roleids == null || roleids.trim().length() == 0) {
+			return Collections.EMPTY_LIST;
+		}
+		List<HashMap> list = (List<HashMap>) sqlSession.selectList("User.findMySubContactsList", roleids);
+		return list;
+	}
+
+}

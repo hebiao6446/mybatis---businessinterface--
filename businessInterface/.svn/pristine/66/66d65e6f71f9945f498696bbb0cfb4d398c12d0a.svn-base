@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Attendance">
+
+	<resultMap type="Attendance" id="AttendanceMap">
+		<result column="attendance_id" property="attendanceId" />
+		<result column="user_id" property="userId" />
+		<result column="in_sign_type" property="inSignType" />
+		<result column="in_time" property="inTime" />
+		<result column="out_time" property="outTime" />
+		<result column="out_sign_type" property="outSignType" />
+		<result column="status" property="status" />
+		<result column="day_time" property="dayTime" />
+		<result column="in_address" property="inAddress" />
+		<result column="out_address" property="outAddress" />
+		<result column="in_lng" property="inLng" />
+		<result column="in_lat" property="inLat" />
+		<result column="out_lng" property="outLng" />
+		<result column="out_lat" property="outLat" />
+		<result column="delete_flag" property="deleteFlag" />
+		<!-- 注意：下面属性列在数据库不存在 -->
+		<result column="myTime" property="myTime" />
+	</resultMap>
+	<sql id="datr">
+		AND delete_flag=1
+	</sql>
+	<select id="findTodaySign" parameterType="net.sf.json.JSONObject"
+		resultMap="AttendanceMap">
+		select * from (SELECT #{dayTime} as myTime) t left join
+		tb_attendance a
+		on user_id=#{userId} and
+		a.day_time=t.myTime
+		<include refid="Attendance.datr" />
+	</select>
+	<insert id="insertSign" parameterType="net.sf.json.JSONObject">
+		insert into
+		tb_attendance
+		(user_id, in_sign_type, in_time, In_lng,
+		In_lat, In_address, status,
+		day_time, delete_flag)
+		values (#{userId}, #{signType}, #{time}, #{lng},
+		#{lat}, #{address}, #{status}, #{dayTime}, 1)
+	</insert>
+	<update id="updateSign" parameterType="net.sf.json.JSONObject">
+		update tb_attendance set
+		out_sign_type=#{signType}, out_time=#{time},
+		out_lng=#{lng}, out_lat=#{lat},
+		out_address=#{address},
+		status=#{status} where user_id=#{userId} and
+		day_time=#{dayTime}
+	</update>
+	<select id="findHistorySign" parameterType="net.sf.json.JSONObject"
+		resultMap="AttendanceMap">
+		select d.myTime,a.* from tb_attendance a RIGHT join (
+		<foreach collection="t" item="dayTime" separator="union">
+			select
+			#{dayTime} as myTime
+		</foreach>
+		) d on a.day_time=d.myTime
+		and a.user_id=#{userId}
+	</select>
+
+	<select id="findManagedSign" parameterType="net.sf.json.JSONObject"
+		resultType="java.util.HashMap">
+		select * from tb_user u LEFT JOIN tb_attendance a ON
+		u.user_id=a.user_id AND a.Day_time=#{dateTime}
+		WHERE u.role_id IN(${roleIdList}) and u.delete_flag=1
+		<if test="index!=null">
+			limit ${index},${size}
+		</if>
+	</select>
+	
+	<select id="findManagedSignCount" parameterType="net.sf.json.JSONObject"
+		resultType="Integer">
+		select count(*) from tb_user u LEFT JOIN tb_attendance a ON
+		u.user_id=a.user_id AND a.Day_time=#{dateTime}
+		WHERE u.role_id IN(${roleIdList}) and u.delete_flag=1
+		<if test="index!=null">
+			limit #{index},#{size}
+		</if>
+	</select>
+</mapper>

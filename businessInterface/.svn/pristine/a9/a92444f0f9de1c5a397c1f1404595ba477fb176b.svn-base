@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Group">
+	<resultMap type="Group" id="GroupMap">
+		<result column="group_id" property="groupId" />
+		<result column="user_id" property="userId" />
+		<result column="name" property="name" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="is_default" property="isDefault" />
+		<result column="update_time" property="updateTime" />
+		<result column="order_field" property="orderField" />
+	</resultMap>
+
+	<sql id="dataFilter">
+		AND delete_flag=1
+	</sql>
+
+	<select id="findUserGroupList" parameterType="net.sf.json.JSONObject"
+		resultMap="GroupMap">
+		select * from tb_group WHERE user_id=#{userId}
+		<include refid="Group.dataFilter" />
+	</select>
+
+	<select id="findGroupisDefaultList" parameterType="net.sf.json.JSONObject"
+		resultMap="GroupMap">
+		select * from tb_group WHERE user_id=#{userId} AND is_default='T'
+		<include refid="Group.dataFilter" />
+	</select>
+
+
+	<select id="findGroupListByOrder" parameterType="net.sf.json.JSONObject"
+		resultMap="GroupMap">
+		select * from tb_group WHERE user_id=#{userId}
+		<include refid="Group.dataFilter" />
+		and order_field >0 order by order_field asc
+	</select>
+	<select id="findGroupListNoOrder" parameterType="net.sf.json.JSONObject"
+		resultMap="GroupMap">
+		select * from tb_group WHERE user_id=#{userId}
+		<include refid="Group.dataFilter" />
+		and order_field is NULL order by update_time ASC
+	</select>
+
+
+	<insert id="insertUserGroupInfo" parameterType="net.sf.json.JSONObject">
+		insert into
+		tb_group(user_id,name,update_time,delete_flag,is_default)
+		values(#{userId},#{name},#{updateTime},1,'F')
+	</insert>
+
+	<update id="updateUserGroupInfo" parameterType="net.sf.json.JSONObject">
+		update tb_group	set name=#{name} where group_id=#{groupId}
+	</update>
+
+	<delete id="deleteGroupData" parameterType="net.sf.json.JSONObject">
+		delete from tb_group
+		where group_id=#{groupId} 
+	</delete>
+
+
+
+
+	<select id="findUserGroup" parameterType="net.sf.json.JSONObject"
+		resultMap="GroupMap">
+		select * from tb_group WHERE group_id=#{groupId}
+		<include refid="Group.dataFilter" />
+	</select>
+
+	<select id="findUserGroupInfo" parameterType="net.sf.json.JSONObject"
+		resultMap="GroupMap">
+		select * from tb_group WHERE name=#{name} and update_time=#{updateTime} and
+		user_id=#{userId}	and is_default=#{isDefault}	        
+	</select>
+	<select id="findUserGroupById" parameterType="Long"
+		resultMap="GroupMap">
+		select * from tb_group WHERE group_id=#{value}        
+	</select>
+	<update id="updateUserGroupOrderFieldById" parameterType="net.sf.json.JSONObject">
+	 update tb_group  set order_field=(select t2.order_field from tb_group t2 where t2.group_id=#{groupId2}),update_time=(select t3.update_time from tb_group t3 where t3.group_id=#{groupId2}) 
+	 where group_id=#{groupId1} and user_id=#{userId}
+	</update>
+	<update id="updateUserGroupOrderFieldByGroup" parameterType="Group">
+	 update tb_group set order_field=#{orderField},update_time=#{updateTime} 
+	 where group_id=#{groupId} and user_id=#{userId}
+	</update>
+
+
+
+</mapper>

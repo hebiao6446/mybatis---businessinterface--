@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Blessings">
+	<resultMap type="Blessings" id="BlessingsMap">
+		
+		<result column="blessings_id" property="blessingsId" />
+		<result column="blessings_type_id" property="blessingsTypeId" />
+		<result column="content" property="content" />
+	</resultMap>
+
+
+	<select id="findBlessingsListCount" parameterType="net.sf.json.JSONObject"
+		resultType="Integer">
+		select count(*) from tb_blessings  WHERE blessings_type_id=#{blessingsTypeId}
+
+	</select>
+
+	<select id="findBlessingsList" parameterType="net.sf.json.JSONObject"
+		resultMap="BlessingsMap">
+		select * from tb_blessings where blessings_type_id=#{blessingsTypeId}
+
+	</select>
+	
+	
+	<select id="findBlessingIndexsList" parameterType="net.sf.json.JSONObject"  resultMap="BlessingsMap">
+		select * from tb_blessings where blessings_type_id=1
+
+	</select>
+	
+	
+	
+</mapper>

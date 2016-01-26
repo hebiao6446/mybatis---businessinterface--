@@ -1,0 +1,49 @@
+package com.business.service.impl;
+
+import java.math.BigDecimal;
+import java.sql.Time;
+import java.util.Calendar;
+import java.util.Date;
+
+import net.sf.json.JSONObject;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.business.entity.Attendance;
+import com.business.entity.Company;
+import com.business.entity.User;
+import com.business.service.SignManager;
+
+@Service
+@Transactional
+public class SignManagerImpl implements SignManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	@Override
+	public Attendance findTodaySign(JSONObject map) {
+		return (Attendance) sqlSession.selectOne("Attendance.findTodaySign",
+				map);
+	}
+
+	@Override
+	public Company findCompanyInfo(User user) {
+		return (Company) sqlSession.selectOne("Company.findWorkTime", user);
+	}
+
+	@Override
+	public void updateSign(JSONObject param) {
+		sqlSession.insert("Attendance.updateSign", param);
+	}
+
+	@Override
+	public void insertSign(JSONObject param) {
+		sqlSession.update("Attendance.insertSign", param);
+	}
+
+}

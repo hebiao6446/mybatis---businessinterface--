@@ -1,0 +1,96 @@
+package com.business.service.impl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import com.business.entity.Company;
+import com.business.entity.User;
+import com.business.service.ColumnManager;
+import com.business.service.ContactManager;
+import com.business.service.UserManager;
+import com.common.Commonparam;
+
+@Service
+@Transactional
+public class UserManagerImpl implements UserManager{
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+	
+	public UserManagerImpl() {
+	}
+
+	@Transactional(propagation=Propagation.NOT_SUPPORTED,readOnly=true)//一个只读事务，可以提高效率。 
+	@Override
+	public User userLogin(JSONObject param) {
+		// TODO Auto-generated method stub
+		Object obj = sqlSession.selectOne("User.userLogin",param);
+		return (User) obj;
+	}
+
+	@Override
+	public User findUserInfo(JSONObject param) {
+		
+		return (User) sqlSession.selectOne("User.findUserInfo",param);
+	}
+
+	@Transactional(propagation=Propagation.NOT_SUPPORTED,readOnly=true)//一个只读事务，可以提高效率。 
+	@Override
+	public Object findUserCompanyId(Long roleId) {
+		Object obj = sqlSession.selectOne("User.findUserCompanyId",roleId);
+		return  obj;
+	}
+	@Transactional(propagation=Propagation.NOT_SUPPORTED,readOnly=true)//一个只读事务，可以提高效率。 
+	@Override
+	public Integer findUserCompanyType(Long roleId) {
+		// TODO Auto-generated method stub
+		Object obj = sqlSession.selectOne("User.findUserCompanyType",roleId);
+		return  Integer.valueOf(obj.toString());
+	}
+	@Transactional(propagation=Propagation.NOT_SUPPORTED,readOnly=true)//一个只读事务，可以提高效率。 
+	@Override
+	public Long findUserRoleChidren(Long roleId) {
+		// TODO Auto-generated method stub
+		Object obj = sqlSession.selectOne("User.findUserRoleChidren",roleId);
+		return  (Long) obj;
+	}
+
+	@Transactional(propagation=Propagation.NOT_SUPPORTED,readOnly=true)//一个只读事务，可以提高效率。 
+	@Override
+	public List<HashMap> findUserMainMenu(JSONObject param) {
+		// TODO Auto-generated method stub
+		List<HashMap> rt = (List<HashMap>) sqlSession.selectList("User.findUserMainMenu",param);
+		return rt;
+	}
+
+	@Override
+	public List<HashMap> findUserAllMenu(JSONObject param) {
+		List<HashMap> rt = (List<HashMap>) sqlSession.selectList("User.findUserAllMenu",param);
+		return rt;
+	}
+
+	@Override
+	public Object findUserAddModule(Object object) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	
+}

@@ -1,0 +1,118 @@
+package com.business.service.impl;
+
+import java.util.HashMap;
+import java.util.List;
+import net.sf.json.JSONObject;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.business.entity.User;
+import com.business.entity.UserRoleCompany;
+import com.business.service.UserManager;
+
+@Service
+@Transactional
+public class UserManagerImpl implements UserManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	@Override
+	public String findUserChidrenRole(Long roleId) {
+		return (String) sqlSession
+				.selectOne("Role.selectManagedRoleId", roleId);
+	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	// 一个只读事务，可以提高效率。
+	@Override
+	public User userLogin(JSONObject param) {
+
+		Object obj = sqlSession.selectOne("User.userLogin", param);
+		return (User) obj;
+	}
+
+	@Override
+	public void addUserSuggest(JSONObject param) {
+		sqlSession.insert("User.addUserSuggest", param);
+	}
+
+	@Override
+	public UserRoleCompany finduserRoleAndCompany(JSONObject param) {
+		UserRoleCompany uRC = (UserRoleCompany) sqlSession.selectOne(
+				"User.finduserRoleAndCompany", param);
+		if (uRC.getParentId() == 0) {
+			if (param.getInt("type") == 1) {
+				param.put("column", "report_work");
+			} else if (param.getInt("type") == 2) {
+				param.put("column", "out_work");
+			}
+			param.put("companyId", uRC.getCompanyId());
+			sqlSession.update("Company.updateAttendanceWorkTime", param);
+		}
+		return uRC;
+	}
+
+	@Override
+	public User findUserInfo(JSONObject param) {
+
+		return (User) sqlSession.selectOne("User.findUserInfo", param);
+	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	// 一个只读事务，可以提高效率。
+	@Override
+	public Object findUserCompanyId(Long roleId) {
+		Object obj = sqlSession.selectOne("User.findUserCompanyId", roleId);
+		return obj;
+	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	// 一个只读事务，可以提高效率。
+	@Override
+	public Integer findUserCompanyType(Long roleId) {
+
+		Object obj = sqlSession.selectOne("User.findUserCompanyType", roleId);
+		return Integer.valueOf(obj.toString());
+	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	// 一个只读事务，可以提高效率。
+	@Override
+	public Long findUserRoleChidren(Long roleId) {
+
+		Object obj = sqlSession.selectOne("User.findUserRoleChidren", roleId);
+		return (Long) obj;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public List<HashMap> findUserMainMenu(JSONObject param) {
+		return (List<HashMap>) sqlSession.selectList("User.findUserMainMenu",
+				param);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public List<HashMap> findUserAllMenu(JSONObject param) {
+		return (List<HashMap>) sqlSession.selectList("User.findUserAllMenu",
+				param);
+	}
+
+	@Override
+	public Object findUserAddModule(Object object) {
+
+		return null;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public List<HashMap> findAllUserList(Long companyId) {
+		return (List<HashMap>) sqlSession.selectList("User.findAllUserList",
+				companyId);
+	}
+
+}

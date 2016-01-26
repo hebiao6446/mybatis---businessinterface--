@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Monitor">
+
+	<resultMap type="Monitor" id="MonitorMap">
+		<result column="monitor_id" property="monitorId" />
+		<result column="attendance_id" property="attendanceId" />
+		<result column="time" property="time" />
+		<result column="lat" property="lat" />
+		<result column="lng" property="lng" />
+		<result column="day_time" property="dayTime" />
+		<result column="delete_flag" property="deleteFlag" />
+
+	</resultMap>
+
+
+
+</mapper>

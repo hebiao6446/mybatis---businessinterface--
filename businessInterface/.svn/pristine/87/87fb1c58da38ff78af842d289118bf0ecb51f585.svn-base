@@ -1,0 +1,19 @@
+package com.business.service;
+
+import net.sf.json.JSONObject;
+
+import com.business.entity.Attendance;
+import com.business.entity.Company;
+import com.business.entity.User;
+
+public interface SignManager {
+
+	Attendance findTodaySign(JSONObject map);
+	
+	Company findCompanyInfo(User user);
+
+	void updateSign(JSONObject param);	
+
+	void insertSign(JSONObject param);
+
+}

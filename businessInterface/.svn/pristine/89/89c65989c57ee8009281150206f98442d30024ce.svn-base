@@ -1,0 +1,158 @@
+package com.business.service.impl;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.business.entity.AttendDescript;
+import com.business.entity.Attendance;
+import com.business.entity.Company;
+import com.business.entity.User;
+import com.business.service.SignManager;
+
+@Service
+@Transactional
+public class SignManagerImpl implements SignManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	@Override
+	public Attendance findTodaySign(JSONObject map) {
+		return (Attendance) sqlSession.selectOne("Attendance.findTodaySign",
+				map);
+	}
+
+	@Override
+	public Company findCompanyInfo(User user) {
+		return (Company) sqlSession.selectOne("Company.findWorkTime", user);
+	}
+
+	@Override
+	public void updateSign(JSONObject param) {
+		sqlSession.insert("Attendance.updateSign", param);
+	}
+
+	@Override
+	public void insertSign(JSONObject param) {
+		sqlSession.update("Attendance.insertSign", param);
+	}
+
+	@Override
+	public void insertAttendDescript(JSONObject param) {
+		sqlSession.insert("AttendDescript.insertAttendDescript", param);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AttendDescript> findHistoryAttendDescript(JSONObject param) {
+		return (List<AttendDescript>) sqlSession.selectList(
+				"AttendDescript.findHistoryAttendDescript", param);
+	}
+
+	@Override
+	public Object findHistoryAttendDescriptCount(JSONObject param) {
+
+		return sqlSession.selectOne(
+				"AttendDescript.findHistoryAttendDescriptCount", param);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	@Override
+	public List<Attendance> findHistorySign(JSONObject param) {
+		Integer size = param.getInt("size");
+		Integer page = param.getInt("page");
+		String fontTime = param.getString("fontTime");
+		String backTime = param.getString("backTime");
+		java.sql.Date date = null;
+		if (fontTime != null && !"".equals(fontTime)) {
+			date = new java.sql.Date(java.sql.Date.valueOf(fontTime).getTime()
+					- (page - 1) * 24 * 60 * 60 * 1000*size);
+		} else {
+			date = new java.sql.Date(new Date().getTime() - (page - 1) * 24
+					* 60 * 60 * 1000*size);
+		}
+		if (backTime != null && !"".equals(backTime)) {
+			if (java.sql.Date.valueOf(backTime).before(
+					new java.sql.Date(date.getTime() - size * 24 * 60 * 60
+							* 1000))) {
+				long e = java.sql.Date.valueOf(backTime).getTime()
+						- date.getTime();
+				size = (int) (e / 1000 / 60 / 60 / 24);
+			}
+		}
+		List<String> t = new ArrayList<String>();
+		for (int i = 0; i < size; i++) {
+			t.add(new java.sql.Date(date.getTime() - i * 24 * 60 * 60 * 1000)
+					.toString());
+		}
+		param.put("t", t);
+		List<Attendance> list = (List<Attendance>) sqlSession.selectList(
+				"Attendance.findHistorySign", param);
+		return list;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
+	@Override
+	public List<Attendance> findManagedSign(JSONObject param) {
+		List<HashMap> list = (List<HashMap>) sqlSession.selectList(
+				"Attendance.findManagedSign", param);
+		List<Attendance> list1 = new ArrayList<Attendance>();
+		for (HashMap map : list) {
+			Attendance a = new Attendance();
+			
+			a.setAttendanceId(map.get("attendance_id") == null ? 0 : Long
+					.valueOf(map.get("attendance_id").toString()));
+			a.setDayTime(java.sql.Date.valueOf(param.getString("dateTime")));
+			a.setUserId(Long.valueOf(map.get("user_id").toString()));
+			a.setUserName(map.get("name").toString());
+			a.setStatus(map.get("status") == null ? 0 : Integer.valueOf(map
+					.get("status").toString()));			
+			a.setMyTime(param.getString("dateTime"));
+			
+			a.setInPhone(map.get("in_phone") == null ? "" : map.get("in_phone")
+					.toString());
+			a.setInAddress(map.get("in_address") == null ? "" : map.get(
+					"in_address").toString());
+			a.setInLat(new BigDecimal(map.get("in_lat") == null ? "0" : map
+					.get("in_lat").toString()));
+			a.setInLng(new BigDecimal(map.get("in_lng") == null ? "0" : map
+					.get("in_lng").toString()));
+			a.setInTime(map.get("in_time") == null ? null : new java.sql.Time(
+					Long.valueOf(map.get("in_time").toString())));
+			
+			a.setOutPhone(map.get("out_phone") == null ? "" : map.get(
+					"out_phone").toString());
+			a.setOutLat(new BigDecimal(map.get("out_lat") == null ? "0" : map
+					.get("out_lat").toString()));
+			a.setOutLng(new BigDecimal(map.get("out_lng") == null ? "0" : map
+					.get("out_lng").toString()));
+			a.setOutAddress(map.get("out_address") == null ? "" : map.get(
+					"out_address").toString());
+			a.setOutTime(map.get("out_time") == null ? null
+					: new java.sql.Time(Long.valueOf(map.get("out_time")
+							.toString())));
+			
+			list1.add(a);
+		}
+		return list1;
+	}
+
+	@Override
+	public Object findManagedSignCount(JSONObject param) {
+
+		return sqlSession.selectOne("Attendance.findManagedSignCount", param);
+	}
+
+}

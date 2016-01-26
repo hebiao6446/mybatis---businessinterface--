@@ -1,0 +1,52 @@
+package com.business.service;
+
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+
+import com.business.entity.Group;
+
+public interface ContactManager {
+
+	@SuppressWarnings("rawtypes")
+	List findUserGroupList(JSONObject param);
+
+
+	Integer findcontactsCount(Group group);
+
+
+	Object findcontactsList(Group group);
+
+
+	Group updateUserGroupInfo(JSONObject param);
+
+
+	void updateContactsInfo(JSONObject param);
+
+
+
+	void deleteGroupData(JSONObject param);
+
+
+	Group findGroupisDefaultList(JSONObject param);
+
+
+	Object findMyContactsNum(JSONObject param);
+
+
+	Object findSubContactsNum(JSONObject param);
+
+
+	@SuppressWarnings("rawtypes")
+	List findMySubContactsList(JSONObject param);
+
+
+	Object findUserGroup(JSONObject param);
+
+
+
+
+
+
+}

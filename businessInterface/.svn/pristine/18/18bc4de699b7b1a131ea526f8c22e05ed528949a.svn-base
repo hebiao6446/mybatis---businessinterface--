@@ -1,0 +1,151 @@
+package com.business.entity;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.Time;
+import java.util.Date;
+
+import javax.persistence.Transient;
+
+public class Attendance implements Serializable {
+
+	private Long attendanceId;
+	private Long userId;
+	private String inPhone;
+	private Time inTime;
+	private Time outTime;
+	private String outPhone;
+	private Integer status;
+	private Date dayTime;
+	private Integer deleteFlag;
+	private String inAddress;
+	private String outAddress;
+	private BigDecimal inLng;
+	private BigDecimal inLat;
+	private BigDecimal outLng;
+	private BigDecimal outLat;
+
+	public Attendance() {
+	}
+
+	public Long getAttendanceId() {
+		return attendanceId;
+	}
+
+	public void setAttendanceId(Long attendanceId) {
+		this.attendanceId = attendanceId;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public String getInPhone() {
+		return inPhone;
+	}
+
+	public void setInPhone(String inPhone) {
+		this.inPhone = inPhone;
+	}
+
+	public Time getInTime() {
+		return inTime;
+	}
+
+	public void setInTime(Time inTime) {
+		this.inTime = inTime;
+	}
+
+	public Time getOutTime() {
+		return outTime;
+	}
+
+	public void setOutTime(Time outTime) {
+		this.outTime = outTime;
+	}
+
+	public String getOutPhone() {
+		return outPhone;
+	}
+
+	public void setOutPhone(String outPhone) {
+		this.outPhone = outPhone;
+	}
+
+	public Integer getStatus() {
+		return status;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+
+	public Date getDayTime() {
+		return dayTime;
+	}
+
+	public void setDayTime(Date dayTime) {
+		this.dayTime = dayTime;
+	}
+
+	public Integer getDeleteFlag() {
+		return deleteFlag;
+	}
+
+	public void setDeleteFlag(Integer deleteFlag) {
+		this.deleteFlag = deleteFlag;
+	}
+
+	public String getInAddress() {
+		return inAddress;
+	}
+
+	public void setInAddress(String inAddress) {
+		this.inAddress = inAddress;
+	}
+
+	public String getOutAddress() {
+		return outAddress;
+	}
+
+	public void setOutAddress(String outAddress) {
+		this.outAddress = outAddress;
+	}
+
+	public BigDecimal getInLng() {
+		return inLng;
+	}
+
+	public void setInLng(BigDecimal inLng) {
+		this.inLng = inLng;
+	}
+
+	public BigDecimal getInLat() {
+		return inLat;
+	}
+
+	public void setInLat(BigDecimal inLat) {
+		this.inLat = inLat;
+	}
+
+	public BigDecimal getOutLng() {
+		return outLng;
+	}
+
+	public void setOutLng(BigDecimal outLng) {
+		this.outLng = outLng;
+	}
+
+	public BigDecimal getOutLat() {
+		return outLat;
+	}
+
+	public void setOutLat(BigDecimal outLat) {
+		this.outLat = outLat;
+	}
+
+}

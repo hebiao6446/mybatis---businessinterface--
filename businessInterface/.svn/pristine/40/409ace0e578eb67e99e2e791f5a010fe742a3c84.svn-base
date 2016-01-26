@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="CompanyModule">
+
+	<resultMap type="CompanyModule" id="CompanyModuleMap">
+		<result column="company_id" property="companyId" />
+		<result column="module_id" property="moduleId" />
+		<result column="useful_time" property="usefulTime" />
+		<result column="usable" property="usable" />
+		<result column="update_time" property="updateTime" />
+		<result column="delete_flag" property="deleteFlag" />
+
+	</resultMap>
+
+
+
+</mapper>

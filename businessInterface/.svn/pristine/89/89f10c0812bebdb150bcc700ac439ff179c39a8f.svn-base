@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Company">
+
+	<resultMap type="Company" id="CompanyMap">
+		<result column="company_id" property="companyId" />
+		<result column="name" property="name" />
+	</resultMap>
+	<sql id="dataFilter">
+	   AND delete_flag=1 and company_id=#{companyId}
+	</sql>
+	<select id="findCompanyList" parameterType="java.util.HashMap" resultMap="CompanyMap">
+        select * from tb_company
+	</select>
+
+	
+</mapper>

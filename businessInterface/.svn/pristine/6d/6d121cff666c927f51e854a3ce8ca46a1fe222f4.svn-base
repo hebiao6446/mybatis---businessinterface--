@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Contacts">
+
+	<resultMap type="Contacts" id="ContactsMap">
+		<result column="contacts_id" property="contactsId" />
+		<result column="group_id" property="groupId" />
+		<result column="name" property="name" />
+		<result column="address" property="address" />
+		<result column="email" property="email" />
+		<result column="company" property="company" />
+		<result column="phone" property="phone" />
+		<result column="fax" property="fax" />
+		<result column="mobile" property="mobile" />
+		<result column="qq" property="qq" />
+		<result column="job" property="job" />
+		<result column="business" property="business" />
+		<result column="first_letter" property="firstLetter" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+	<sql id="dataFilter">
+		AND delete_flag=1
+	</sql>
+
+	<select id="findcontactsCount" parameterType="net.sf.json.JSONObject"
+		resultType="Integer">
+		select count(*) from tb_contacts WHERE group_id=#{groupId}
+		<include refid="Contacts.dataFilter" />
+
+	</select>
+
+	<select id="findcontactsList" parameterType="net.sf.json.JSONObject"
+		resultMap="ContactsMap">
+		select * from tb_contacts where group_id=#{groupId}
+		<include refid="Contacts.dataFilter" />
+
+	</select>
+
+
+	<update id="updateContactsInfo" parameterType="net.sf.json.JSONObject">
+		update tb_contacts set  group_id=#{groupId},name=#{name},address=#{address},email=#{email},company=#{company},
+		phone=#{phone},fax=#{fax},mobile=#{mobile},qq=#{qq},job=#{job},business=#{business},first_letter=#{firstLetter},update_time=#{updateTime}
+		where contacts_id=#{contactsId}
+	</update>
+
+
+
+	<insert id="insertContactsInfo" parameterType="net.sf.json.JSONObject">
+		insert into
+		tb_contacts(group_id,name,address,email,company,phone,fax,mobile,qq,job,business,first_letter,update_time,delete_flag)
+		values(#{groupId},#{name},#{address},#{email},#{company},#{phone},#{fax},#{mobile},#{qq},#{job},#{business},#{firstLetter},#{updateTime},1)
+	</insert>
+	
+	
+	
+	<update id="updateGroupContactData" parameterType="net.sf.json.JSONObject">
+		update tb_contacts  set group_id=#{defaultGroupId},update_time=#{updateTime}		
+		where group_id=#{groupId}
+	</update>
+	
+	
+	
+	
+	
+	
+
+</mapper>

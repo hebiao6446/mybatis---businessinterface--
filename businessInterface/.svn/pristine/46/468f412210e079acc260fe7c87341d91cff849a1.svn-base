@@ -1,0 +1,13 @@
+package com.business.service;
+
+import net.sf.json.JSONObject;
+
+import com.business.entity.Attendance;
+
+public interface SignManager {
+
+	Attendance findTodaySign(JSONObject map);
+
+	Long updateSign(JSONObject param);
+
+}

@@ -1,0 +1,126 @@
+package com.business.action;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Namespace;
+
+import com.business.entity.Attendance;
+import com.business.entity.User;
+import com.business.service.SignManager;
+import com.business.service.UserManager;
+import com.common.Commonparam;
+import com.common.MD5Util;
+import com.json.BaseBean;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+
+@Namespace("/sign")
+public class SignAction extends ActionSupport {
+	private static Logger logger = Logger.getLogger(SignAction.class);
+
+	private String key, data;
+	@Resource
+	private SignManager signManager;
+	@Resource
+	private UserManager userManager;
+
+	@Action(value = "findTodaySign")
+	public void findTodaySign() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = MD5Util.digest(data);
+			JSONObject param = JSONObject.fromObject(data);
+			User user = userManager.userLogin(param);
+			if (keyparam.equals(key) && user != null) {
+				param.put("dayTime",
+						new java.sql.Date(new Date().getTime()).toString());
+				Attendance attendance = signManager.findTodaySign(param);
+
+				HashMap<String, String> map = new HashMap<String, String>();
+				map.put("in", "F");
+				map.put("out", "F");
+				if (attendance != null) {
+					if (attendance.getInTime() != null) {
+						map.put("in", "T");
+					}
+					if (attendance.getOutTime() != null) {
+						map.put("out", "T");
+					}
+				}
+				bean.setStatus(200);
+				bean.setRows(map);
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("sign/findTodaySign:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	@Action(value = "updateSign")
+	public void updateSign() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = MD5Util.digest(data);
+			JSONObject param = JSONObject.fromObject(data);
+			User user = userManager.userLogin(param);
+			if (keyparam.equals(key) && user != null) {
+				param.put("dayTime", new Date());
+				Long signId = signManager.updateSign(param);
+
+				bean.setStatus(200);
+				bean.setRows("");
+			} else {
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("sign/updateSign:param=" + data + ",error="
+					+ e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+}

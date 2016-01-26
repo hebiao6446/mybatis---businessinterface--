@@ -1,0 +1,26 @@
+package com.business.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+
+import com.business.entity.BlessingsType;
+import com.business.entity.Company;
+import com.business.entity.User;
+
+public interface BlessingsManager {
+
+	List findBlessingsTypeList(JSONObject param);
+
+	Integer findBlessingsListCount(BlessingsType blessingsType);
+
+	Object findBlessingsList(BlessingsType blessingsType);
+
+	
+
+}

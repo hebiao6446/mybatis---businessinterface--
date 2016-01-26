@@ -1,0 +1,224 @@
+package com.business.service.impl;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.business.entity.Things;
+import com.business.entity.ThingsFile;
+import com.business.entity.ThingsFinish;
+import com.business.entity.ThingsThingsFinish;
+import com.business.service.ThingsManager;
+import com.common.Commonparam;
+
+@Service
+@Transactional
+public class ThingsManagerImpl implements ThingsManager {
+	@Autowired
+	private SqlSessionTemplate sqlSession;
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ThingsThingsFinish> findAllThings(JSONObject param) {
+		List<ThingsThingsFinish> list = (List<ThingsThingsFinish>) sqlSession
+				.selectList("ThingsFinish.findAllThings", param);
+		for (ThingsThingsFinish f : list) {
+			List<ThingsFile> files = (List<ThingsFile>) sqlSession.selectList(
+					"ThingsFile.findFileByThingsId", JSONObject.fromObject(f));
+			f.setThingFileList(files);
+			Calendar ce = Calendar.getInstance();
+			Calendar cf = Calendar.getInstance();
+			cf.setTime(f.getFinishTime() == null ? f.getStartTime() : f
+					.getFinishTime());
+			if (f.getEndTime().before(new Date())) {
+				f.setOutDate("-1");
+				ce.setTime(f.getEndTime());
+			} else if (f.getStartTime().after(new Date())) {
+				Long blong = (f.getStartTime().getTime())
+						- (new Date().getTime());
+				int days = (int) (blong / 24 / 60 / 60 / 1000) + 1;
+				f.setOutDate(days + "");
+			}else{
+				f.setOutDate("0");
+			}
+			int years = ce.get(Calendar.YEAR) - cf.get(Calendar.YEAR);
+			if (f.getPeriodType() == 0) {
+			} else if (f.getPeriodType() == 1) {
+				int days = ce.get(Calendar.DAY_OF_YEAR)
+						- cf.get(Calendar.DAY_OF_YEAR);
+				if ((days > 0 && years == 0) || years > 0) {
+					f.setIsFinish("F");
+					f.setFinishTime(null);
+				}
+			} else if (f.getPeriodType() == 2) {
+				int weeks = ce.get(Calendar.WEEK_OF_YEAR)
+						- cf.get(Calendar.WEEK_OF_YEAR);
+				if ((weeks > 0 && years == 0) || years > 0) {
+					f.setIsFinish("F");
+					f.setFinishTime(null);
+				}
+			} else if (f.getPeriodType() == 3) {
+				int month = ce.get(Calendar.MONTH) - cf.get(Calendar.MONTH);
+				if ((month > 0 && years == 0) || years > 0) {
+					f.setIsFinish("F");
+					f.setFinishTime(null);
+				}
+			} else if (f.getPeriodType() == 4) {
+				if (years > 0) {
+					f.setIsFinish("F");
+					f.setFinishTime(null);
+				}
+			}
+			if(f.getCreateUserId()==f.getFinishUserId()){
+				if(f.getIsEmergency().equals("T")){
+					f.setThingType(1);
+				}else{
+					f.setThingType(2);
+				}				
+			}else{
+				if(f.getIsEmergency().equals("T")){
+					f.setThingType(3);
+				}else{
+					f.setThingType(4);
+				}
+			}
+		}
+		return list;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Things> findAllCreateThings(JSONObject param) {
+		List<Things> thingsList = (List<Things>) sqlSession.selectList(
+				"Things.findAllCreateThings", param);
+		for (Things things : thingsList) {
+			List<ThingsFile> files = (List<ThingsFile>) sqlSession.selectList(
+					"ThingsFile.findFileByThingsId",
+					JSONObject.fromObject(things));
+			things.setThingFileList(files);
+			List<ThingsFinish> finishs = (List<ThingsFinish>) sqlSession
+					.selectList("ThingsFinish.findUsersByThingsId",
+							JSONObject.fromObject(things));
+			things.setUserList(finishs);
+		}
+		return thingsList;
+	}
+
+	@Override
+	public void updateNewThings(JSONObject param) {
+		param.put("updateTime", Commonparam.Date2Str());
+		long userId = param.getLong("userId");
+		boolean b = true;
+		if (param.get("thingsId") == null
+				|| "".equals(param.getString("thingsId").trim())) {
+			sqlSession.insert("Things.createNewThings", param);
+			Long thingsId = (Long) sqlSession.selectOne(
+					"Things.selectThingsIcd", param);
+			String[] userIdList = param.getString("finishUserId").split(",");
+			
+			for (String finishUserId : userIdList) {
+				if (finishUserId == null || finishUserId.trim().equals("")) {
+					continue;
+				} else if (Long.valueOf(finishUserId) == userId) {
+					b = false;
+				}
+				ThingsFinish f = new ThingsFinish();
+				f.setDeleteFlag(1);
+				f.setFinishUserId(Long.valueOf(finishUserId));
+				f.setIsFinish("F");
+				f.setThingsId(thingsId);
+				f.setFinishTime(new Date());
+				sqlSession.insert("ThingsFinish.addThingsFinish", f);
+			}
+			if (b) {
+				ThingsFinish f = new ThingsFinish();
+				f.setDeleteFlag(1);
+				f.setFinishUserId(userId);
+				f.setIsFinish("F");
+				f.setThingsId(thingsId);
+				f.setFinishTime(new Date());
+				sqlSession.insert("ThingsFinish.addThingsFinish", f);
+			}
+
+			JSONArray array = param.getJSONArray("resourse");
+			for (Object ot : array) {
+				JSONObject obj = JSONObject.fromObject(ot);
+				obj.put("thingsId", thingsId);
+				sqlSession.insert("ThingsFile.addThingsFile", obj);
+			}
+		} else {
+			sqlSession.update("Things.updateThings", param);
+			Long thingsId = param.getLong("thingsId");
+			String[] userIdList = param.getString("finishUserId").split(",");
+			sqlSession.update("ThingsFinish.deleteThingsFinishUser", thingsId);
+			for (String finishUserId : userIdList) {
+				if (finishUserId == null || finishUserId.trim().equals("")) {
+					continue;
+				} else if (Long.valueOf(finishUserId) == userId) {
+					b = false;
+				}
+				ThingsFinish f = new ThingsFinish();
+				f.setDeleteFlag(1);
+				f.setFinishUserId(Long.valueOf(finishUserId));
+				f.setIsFinish("F");
+				f.setThingsId(thingsId);
+				f.setFinishTime(new Date());
+				ThingsFinish ff = (ThingsFinish) sqlSession.selectOne(
+						"ThingsFinish.ThingsFinishUser", f);
+				if (ff != null) {
+					sqlSession.update("ThingsFinish.updateThingsFinishUser", f);
+				} else {
+					sqlSession.insert("ThingsFinish.addThingsFinish", f);
+				}
+			}
+			if(b){
+				ThingsFinish f1 = new ThingsFinish();
+				f1.setDeleteFlag(1);
+				f1.setFinishUserId(Long.valueOf(userId));
+				f1.setIsFinish("F");
+				f1.setThingsId(thingsId);
+				f1.setFinishTime(new Date());
+				sqlSession.update("ThingsFinish.updateThingsFinishUser", f1);
+			}						
+			JSONArray array = param.getJSONArray("resourse");
+			for (Object ot : array) {
+				JSONObject obj = JSONObject.fromObject(ot);
+				int t = obj.getInt("type");
+				if (t == 1) {
+					obj.put("thingsId", thingsId);
+					sqlSession.insert("ThingsFile.addThingsFile", obj);
+				} else if (t == 2) {
+					sqlSession.delete("ThingsFile.deleteThingsFile", obj);
+				}
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Things findThingsInfo(JSONObject param) {
+		Things things = (Things) sqlSession.selectOne(
+				"Things.findCreateThings", param);
+
+		List<ThingsFile> files = (List<ThingsFile>) sqlSession.selectList(
+				"ThingsFile.findFileByThingsId", param);
+		things.setThingFileList(files);
+		List<ThingsFinish> finishs = (List<ThingsFinish>) sqlSession
+				.selectList("ThingsFinish.findUsersByThingsId", param);
+		things.setUserList(finishs);
+		return things;
+	}
+
+	@Override
+	public void finishThings(JSONObject param) {
+		sqlSession.update("ThingsFinish.finishThings", param);
+	}
+}

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Product">
+
+	<resultMap type="Product" id="ProductMap">
+		<result column="product_id" property="productId" />
+		<result column="product_category_id" property="productCategoryId" />
+		<result column="product_name" property="productName" />
+		<result column="content" property="content" />
+		<result column="price" property="price" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+
+	<sql id="dataFilter">
+		AND delete_flag=1
+	</sql>
+
+
+	<select id="findProductList" parameterType="net.sf.json.JSONObject"
+		resultMap="ProductMap">
+		select * from tb_product WHERE
+		product_category_id=#{productCategoryId}
+		<include refid="Product.dataFilter" />
+
+	</select>
+
+	<insert id="insertOrder" parameterType="net.sf.json.JSONObject">
+		insert into
+		tb_order(product_id,user_id,create_time,user_name,product_name,order_count,price,order_beizhu,total_price
+		<if test="remarks != null">
+			,order_beizhu
+ </if>
+
+		)
+		values(#{productId},#{userId},#{createTime},#{userName},#{productName},#{orderCount},#{price},#{orderBeizhu},#{totalPrice}
+		<if test="remarks != null">
+			,#{remarks}
+ </if>
+
+		)
+	</insert>
+
+
+
+</mapper>

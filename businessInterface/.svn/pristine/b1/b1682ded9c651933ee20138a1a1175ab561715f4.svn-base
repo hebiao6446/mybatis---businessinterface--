@@ -1,0 +1,31 @@
+package com.business.service;
+
+import java.util.List;
+
+import net.sf.json.JSONObject;
+
+import com.business.entity.AttendDescript;
+import com.business.entity.Attendance;
+import com.business.entity.Company;
+import com.business.entity.User;
+
+public interface SignManager {
+
+	Attendance findTodaySign(JSONObject map);
+	
+	Company findCompanyInfo(User user);
+
+	void updateSign(JSONObject param);	
+
+	void insertSign(JSONObject param);
+
+	void insertAttendDescript(JSONObject param);
+
+	List<AttendDescript> findHistoryAttendDescript(JSONObject param);
+
+	List<Attendance> findHistorySign(JSONObject param);
+
+	List<Attendance> findManagedSign(JSONObject param);
+
+	Object findHistoryAttendDescriptCount(JSONObject param);
+}

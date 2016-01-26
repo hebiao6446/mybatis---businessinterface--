@@ -1,0 +1,98 @@
+package com.business.entity;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Transient;
+
+public class Group implements Serializable {
+
+	private Long groupId;
+	private Long userId;
+	private String name;
+	private String isDefault;
+	private Date updateTime;
+	private Integer deleteFlag;
+	private Integer contactsCount;
+	private Object contactsList;
+	private Integer orderField;
+
+	public Group() {
+	}
+
+	public Long getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Long groupId) {
+		this.groupId = groupId;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	public Integer getDeleteFlag() {
+		return deleteFlag;
+	}
+
+	public void setDeleteFlag(Integer deleteFlag) {
+		this.deleteFlag = deleteFlag;
+	}
+
+	
+	public Integer getContactsCount() {
+		return contactsCount;
+	}
+
+	public void setContactsCount(Integer contactsCount) {
+		this.contactsCount = contactsCount;
+	}
+
+	public Object getContactsList() {
+		return contactsList;
+	}
+
+	public void setContactsList(Object contactsList) {
+		this.contactsList = contactsList;
+	}
+
+	public String getIsDefault() {
+		return isDefault;
+	}
+
+	public void setIsDefault(String isDefault) {
+		this.isDefault = isDefault;
+	}
+
+	public Integer getOrderField() {
+		return orderField;
+	}
+
+	public void setOrderField(Integer orderField) {
+		this.orderField = orderField;
+	}
+
+	
+	
+}

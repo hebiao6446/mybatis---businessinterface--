@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="SellVisit">
+
+	<resultMap type="SellVisit" id="SellVisitMap">
+		<result column="sell_visit_id" property="sellVisitId" />
+		<result column="sell_id" property="sellId" />
+		<result column="visit_content" property="visitContent" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+	</resultMap>
+
+<insert id="insertSellVisit" parameterType="net.sf.json.JSONObject">
+	
+    insert into
+		
+		tb_sell_visit(sell_id,visit_content,update_time,delete_flag	
+		)
+		values(#{sellId},#{visitContent},#{updateTime},1
+		)
+	</insert>
+
+<sql id="dataFilter">
+		AND delete_flag=1
+	</sql>
+
+
+	<select id="findSellVisitList" parameterType="net.sf.json.JSONObject"  resultMap="SellVisitMap">
+		select * from tb_sell_visit  WHERE
+		
+		sell_id=#{sellId} 
+		<include refid="SellVisit.dataFilter" />  order by  update_time desc 
+
+	</select>
+
+
+
+</mapper>

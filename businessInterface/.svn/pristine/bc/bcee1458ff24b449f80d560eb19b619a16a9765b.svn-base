@@ -1,0 +1,56 @@
+package com.business.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+
+import com.business.entity.Company;
+import com.business.entity.Group;
+import com.business.entity.User;
+
+public interface ContactManager {
+
+	List findUserGroupList(JSONObject param);
+
+
+	Integer findcontactsCount(Group group);
+
+
+	Object findcontactsList(Group group);
+
+
+	Group updateUserGroupInfo(JSONObject param);
+
+
+	void updateContactsInfo(JSONObject param);
+
+
+
+	void deleteGroupData(JSONObject param);
+
+
+	Group findGroupisDefaultList(JSONObject param);
+
+
+	Object findMyContactsNum(JSONObject param);
+
+
+	Object findSubContactsNum(JSONObject param);
+
+
+	List findMySubContactsList(JSONObject param);
+
+
+	Object findUserGroup(JSONObject param);
+
+
+
+
+
+
+}

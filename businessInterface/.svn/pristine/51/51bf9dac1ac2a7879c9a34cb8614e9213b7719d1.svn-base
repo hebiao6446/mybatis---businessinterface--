@@ -1,0 +1,15 @@
+package com.business.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONArray;
+
+import com.business.entity.Company;
+
+public interface ColumnManager {
+
+	List<Company> loadColumnList(int rows, int page, Integer isCheck, Integer columnAuthority);
+
+}

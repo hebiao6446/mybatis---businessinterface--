@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC 
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="User">
+
+	<resultMap type="User" id="UserMap">
+		<result column="user_id" property="userId" />
+		<result column="account" property="account" />
+		<result column="name" property="name" />
+		<result column="first_letter" property="firstLetter" />
+		<result column="password" property="password" />
+		<result column="attendance" property="attendance" />
+		<result column="phone" property="phone" />
+		<result column="role_id" property="roleId" />
+		<result column="delete_flag" property="deleteFlag" />
+		<result column="update_time" property="updateTime" />
+		<result column="head_image" property="headImage" />
+
+	</resultMap>
+	<sql id="dataFilter">
+		AND delete_flag=1
+	</sql>
+	<insert id="addUserSuggest" parameterType="net.sf.json.JSONObject">
+		insert into
+		tb_suggest(user_id, content, update_time, delete_flag)
+		values(#{userId},#{content},#{updateTime},1)
+	</insert>
+	<select id="finduserRoleAndCompany" parameterType="net.sf.json.JSONObject"
+		resultType="com.business.entity.UserRoleCompany">
+		select u.user_id userId,u.account,u.password,u.`name`
+		userName,u.first_letter firstLetter,u.phone
+		userPhone,u.attendance,u.role_id roleId,u.head_image headImage,
+		r.parent_id parentId,r.`name` roleName,r.company_id companyId,c.`name`
+		companyName,c.introduce,c.address,c.email,c.phone
+		companyPhone,c.logo,c.report_work reportWork,c.out_work outWork
+		from
+		tb_user u inner join tb_role r on
+		u.role_id=r.role_id and
+		u.user_id=#{userId}
+		inner join tb_company c on
+		r.company_id=c.company_id WHERE
+		u.user_id=#{userId}
+	</select>
+
+	<select id="userLogin" parameterType="net.sf.json.JSONObject"
+		resultMap="UserMap">
+		select * from tb_user where 1=1
+		<include refid="User.dataFilter" />
+		and (account=#{account} or phone=#{account})
+	</select>
+	<select id="findUserInfo" parameterType="net.sf.json.JSONObject"
+		resultMap="UserMap">
+		select * from tb_user where user_id=#{userId}
+	</select>
+	<select id="findUserCompanyId" parameterType="Long" resultType="Long">
+		select company_id from tb_role where role_id=#{value}
+	</select>
+	<select id="findUserCompanyType" parameterType="Long"
+		resultType="Integer">
+		select type from tb_company where company_id in(
+		select
+		company_id from tb_role where role_id=#{value})
+	</select>
+
+	<select id="findUserRoleChidren" parameterType="Long"
+		resultType="Long">
+		select count(*) from tb_role where delete_flag=1 and
+		parent_id=#{value}
+	</select>
+	<select id="findUserMainMenu" parameterType="net.sf.json.JSONObject"
+		resultType="java.util.HashMap">
+		select t1.module_id as moduleId,t2.name,t2.usable from
+		tb_company_module t1
+		INNER JOIN tb_module t2 on
+		t1.module_id=t2.module_id where
+		t1.company_id =(
+		select company_id from
+		tb_role where role_id =
+		(select role_id from tb_user where
+		user_id=#{userId} and delete_flag=1) and
+		delete_flag=1) and
+		t1.delete_flag=1 and t2.delete_flag=1
+		order by t2.order_list asc
+	</select>
+	<select id="findUserAllMenu" parameterType="net.sf.json.JSONObject"
+		resultType="java.util.HashMap">
+		select t2.module_id as
+		moduleId,t2.name,t1.usable,t1.useful_time from
+		tb_company_module t1
+		INNER JOIN tb_module t2 on
+		t1.module_id=t2.module_id where
+		t1.delete_flag=1 and
+		t1.company_id=#{companyId} and t2.delete_flag=1
+		order by t2.order_list asc
+	</select>
+
+	<select id="findMySubContactsList" parameterType="String"
+		resultType="java.util.HashMap">
+		select user_id as userId,name,first_letter as firstLetter
+		from tb_user where
+		role_id in(${value})
+		and delete_flag=1 GROUP BY
+		first_letter,userId
+	</select>
+
+
+	<select id="findComapnyUserAllList" parameterType="net.sf.json.JSONObject"
+		resultType="java.util.HashMap">
+		select user_id as userId,name from tb_user where
+		delete_flag=1 AND role_id in(select role_id from tb_role where
+		company_id =#{companyId})
+	</select>
+	<select id="findAllUserList" parameterType="Long" resultType="java.util.HashMap">
+		select user_id as userId,name from tb_user where
+		delete_flag=1 AND
+		role_id in(select role_id from tb_role where
+		company_id =#{companyId})
+	</select>
+
+	<select id="findUserName" parameterType="Long" resultType="String">
+		select name from tb_user where user_id=#{userId}
+	</select>
+
+</mapper>

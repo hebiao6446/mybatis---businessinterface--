@@ -1,0 +1,4 @@
+##html image path
+imagepath=http://127.0.0.1:8080/Policeserver
+##apk
+apkpath=http://127.0.0.1:8080/Policeserver

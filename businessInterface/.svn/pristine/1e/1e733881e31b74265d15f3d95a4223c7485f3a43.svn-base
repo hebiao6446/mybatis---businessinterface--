@@ -1,0 +1,24 @@
+package com.business.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+
+import com.business.entity.Company;
+import com.business.entity.User;
+
+public interface UserManager {
+
+	User userLogin(JSONObject param);
+
+	Object findUserCompanyId(Long roleId);
+
+	Integer findUserCompanyType(Long roleId);
+
+	Long findUserRoleChidren(Long roleId);
+
+}

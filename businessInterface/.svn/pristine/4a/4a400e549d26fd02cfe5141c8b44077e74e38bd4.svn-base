@@ -1,0 +1,31 @@
+package com.business.service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+
+import com.business.entity.Blessings;
+import com.business.entity.BlessingsType;
+import com.business.entity.Company;
+import com.business.entity.Product;
+import com.business.entity.ProductCategory;
+import com.business.entity.User;
+
+public interface ProductManager {
+
+	List findProductCategoryList(JSONObject param);
+
+	List findProductList(JSONObject param);
+
+	Object findProductImgList(Product product);
+
+	void insertOrder(JSONObject param);
+
+
+
+}

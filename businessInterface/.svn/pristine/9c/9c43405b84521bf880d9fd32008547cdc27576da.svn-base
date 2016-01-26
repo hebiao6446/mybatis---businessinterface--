@@ -1,0 +1,236 @@
+package com.business.action;
+
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.UUID;
+
+import javax.annotation.Resource;
+import javax.imageio.ImageIO;
+import javax.persistence.Column;
+import javax.print.Doc;
+import javax.print.DocFlavor;
+import javax.print.DocPrintJob;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.SimpleDoc;
+import javax.print.attribute.DocAttributeSet;
+import javax.print.attribute.HashDocAttributeSet;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.Copies;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.swing.JFileChooser;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.apache.struts2.ServletActionContext;
+import org.apache.struts2.StrutsStatics;
+import org.apache.struts2.convention.annotation.Action;
+import org.apache.struts2.convention.annotation.Namespace;
+import org.apache.struts2.convention.annotation.Result;
+import org.apache.struts2.convention.annotation.Results;
+import org.springframework.stereotype.Controller;
+
+
+import com.business.entity.Company;
+import com.business.entity.User;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
+import com.json.BaseBean;
+import com.business.service.ColumnManager;
+import com.business.service.ContactManager;
+import com.business.service.UserManager;
+import com.common.Commonparam;
+import com.common.MD5Util;
+import com.common.PingYin;
+import com.opensymphony.xwork2.ActionContext;
+import com.opensymphony.xwork2.ActionSupport;
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
+
+
+@Namespace("/user")
+public class UserAction extends ActionSupport {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8491620621758148693L;
+	private static Logger logger = Logger.getLogger(UserAction.class);
+	@Resource
+	private UserManager userManager;
+	private String key,data;
+	
+	/**
+	 * 登录接口
+	 * @throws Exception
+	 */
+	@Action(value="userLogin")
+	public void userLogin() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = Commonparam.Md5String(data);
+			if(keyparam.equals(key)){
+				JSONObject param = JSONObject.fromObject(data);
+				User user = userManager.userLogin(param);
+				if(user==null){
+					bean.setStatus(400);
+					bean.setMsg("账号密码错误!");
+				}
+				else{
+					HashMap<String,Object> rt = new HashMap<String,Object>();
+					rt.put("userId", user.getUserId());
+					rt.put("roleId", user.getRoleId());
+					rt.put("companyId", userManager.findUserCompanyId(user.getRoleId()));
+					rt.put("headImage", user.getHeadImage());
+					rt.put("phone", user.getPhone());
+					rt.put("account", user.getAccount());
+					rt.put("name", user.getName());
+					Integer companyType = userManager.findUserCompanyType(user.getRoleId());
+					if(companyType!=null && companyType==1){
+						Long count = userManager.findUserRoleChidren(user.getRoleId());
+						if(count>0){
+							rt.put("isLeader", 1);
+						}
+						else{
+							rt.put("isLeader", 0);
+						}
+					}
+					else{
+						rt.put("isLeader", 0);
+					}
+					JSONObject param1 = JSONObject.fromObject("{}");
+					param1.put("userId", user.getUserId());
+				    List<HashMap> list = userManager.findUserMainMenu(param1);
+					rt.put("module", list);
+					bean.setStatus(200);
+					bean.setRows(rt);
+				}
+				
+			}
+			else{
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("user/userLogin:param="+data+",error="+e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+	/**
+	 * 用户主功能列表
+	 * @throws Exception
+	 */
+	@Action(value="findUserMainMenu")
+	public void findUserMainMenu() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = Commonparam.Md5String(data);
+			if(keyparam.equals(key)){
+				JSONObject param = JSONObject.fromObject(data);
+			    List<HashMap> list = userManager.findUserMainMenu(param);
+			    bean.setStatus(200);
+			    bean.setRows(list);
+			}
+			else{
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("user/userMainMenu:param="+data+",error="+e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+	/**
+	 * 企业所有模块列表
+	 * @throws Exception
+	 */
+	@Action(value="findUserAllMenu")
+	public void findUserAllMenu() throws Exception {
+		HttpServletResponse response = (HttpServletResponse) ActionContext
+				.getContext().get(ServletActionContext.HTTP_RESPONSE);
+		HttpServletRequest request = (HttpServletRequest) ActionContext
+				.getContext().get(ServletActionContext.HTTP_REQUEST);
+		BaseBean bean = new BaseBean();
+		try {
+			String keyparam = Commonparam.Md5String(data);
+			if(keyparam.equals(key)){
+				JSONObject param = JSONObject.fromObject(data);
+			    List<HashMap> list = userManager.findUserAllMenu(param);
+			    for(HashMap map : list){
+			    	map.put("isAdded", userManager.findUserAddModule(map.get("moduleId")));			    	
+			    }
+			    bean.setStatus(200);
+			    bean.setRows(list);
+			}
+			else{
+				bean.setStatus(400);
+				bean.setMsg(Commonparam.error_param_msg);
+			}
+
+		} catch (Exception e) {
+			bean.setMsg(e.getLocalizedMessage());
+			logger.info("user/userMainMenu:param="+data+",error="+e.getLocalizedMessage());
+		}
+		String json = JSONObject.fromObject(bean).toString();
+		response.getOutputStream().write(json.getBytes("UTF-8"));
+	}
+	
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+	
+	
+}

@@ -1,0 +1,86 @@
+package com.business.action;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.opensymphony.xwork2.ActionSupport;
+import com.opensymphony.xwork2.Preparable;
+import com.opensymphony.xwork2.Result;
+import com.opensymphony.xwork2.interceptor.ValidationWorkflowAware;
+
+/**
+ * Struts
+ * 
+ */
+public abstract class BaseAction<T> extends ActionSupport implements Preparable,ValidationWorkflowAware {
+
+	private static final long serialVersionUID = -906292597708257602L;
+
+	/**
+	 *
+	 */
+	public static final String RELOAD = "reload";
+
+	protected Logger logger = LoggerFactory.getLogger(getClass());
+ 
+
+	/**
+	 * Action
+	 */
+	@Override
+	public String execute() throws Exception {
+		return list();
+	}
+
+	/**
+	 * Action
+	 */
+	public abstract String list() throws Exception;
+
+	/**
+	 * Action
+	 */
+	@Override
+	public abstract String input() throws Exception;
+
+	/**
+	 * Action
+	 */
+	public abstract String save() throws Exception;
+
+	/**
+	 * Action
+	 */
+	public abstract String delete() throws Exception;
+
+	/**
+	 * 
+	 */
+	public void prepare() throws Exception {
+	}
+
+	/**
+	 *
+	 */
+	public void prepareInput() throws Exception {
+		prepareModel();
+	}
+
+	/**
+	 * 
+	 */
+	public void prepareSave() throws Exception {
+		prepareModel();
+	}
+
+	/**
+	 * 绛夊悓浜巔repare()鐨勫唴閮ㄥ嚱鏁�渚沺repardMethodName()鍑芥暟璋冪敤.
+	 */
+	protected abstract void prepareModel() throws Exception;
+
+	/**
+	 * 瀹氫箟鍙傛暟閿欒鐨勬椂鍊欒烦杞埌errorParam.jsp
+	 */
+	public String getInputResultName() {
+		return "errorParam";
+	} 
+}

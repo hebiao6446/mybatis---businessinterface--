@@ -1,0 +1,72 @@
+package com.business.entity;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Transient;
+
+public class BlessingsType implements Serializable {
+
+
+	private Long blessingsTypeId;
+	private Long userId;
+	private String name;
+	private Date updateTime;
+	private Integer deleteFlag;
+
+	public BlessingsType() {
+	}
+
+
+	public Long getBlessingsTypeId() {
+		return blessingsTypeId;
+	}
+
+	public void setBlessingsTypeId(Long blessingsTypeId) {
+		this.blessingsTypeId = blessingsTypeId;
+	}
+
+
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	public Integer getDeleteFlag() {
+		return deleteFlag;
+	}
+
+	public void setDeleteFlag(Integer deleteFlag) {
+		this.deleteFlag = deleteFlag;
+	}
+
+
+	public Long getUserId() {
+		return userId;
+	}
+
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+
+	public String getName() {
+		return name;
+	}
+
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	
+	
+	
+	
+	
+}
