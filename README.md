@@ -15,3 +15,7 @@ Action注解: @Action(value = "userLogin")
 注意，必须以.action结尾
 那么用户的登录接口应该是:
 http://192.168.1.111:8080/businessinterface/user/userLogin.action 
+
+
+后台代码
+https://github.com/hebiao6446/mybatis---businessserver---
